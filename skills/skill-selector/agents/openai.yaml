@@ -1,0 +1,7 @@
+interface:
+  display_name: "Skill Selector（Skill 选择器）"
+  short_description: "动态比较已安装 Skill，并选择和调用最合适的入口"
+  default_prompt: "Use $skill-selector to choose and invoke the best installed Skill for my request."
+
+
+
