@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interactive Explainer</title>
+  <style>
+    /* Fallback tokens keep this template runnable before a style is selected. */
+    :root {
+      --bg: #f4f2ec;
+      --fg: #111;
+      --muted: #66645f;
+      --accent: #e43d30;
+      --accent-2: #2647d7;
+      --surface: #fff;
+      --line: #111;
+      --shadow: 0 28px 80px rgba(17,17,17,.12);
+      --title-font: "Bahnschrift", "Microsoft YaHei", sans-serif;
+      --body-font: "PingFang SC", "Microsoft YaHei", sans-serif;
+      --ease-out: cubic-bezier(.22,1,.36,1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--bg); }
+    body { color: var(--fg); font-family: var(--body-font); }
+    button { font: inherit; }
+
+    #stage {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: var(--bg);
+      transform: translate(-50%, -50%) scale(var(--stage-scale, 1));
+      transform-origin: center;
+      cursor: default;
+      user-select: none;
+    }
+
+    .page {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: 88px 104px 112px;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    .page.is-active { display: block; opacity: 1; }
+    .page-grid { width: 100%; height: 100%; display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 56px; align-items: center; }
+    .page-grid.visual-first { grid-template-columns: minmax(0, 1.16fr) minmax(0, .84fr); }
+    .page-stack { width: 100%; height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 24px; }
+    .evidence-grid { width: 100%; height: 100%; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 32px; align-items: center; }
+    .safe-row { width: 100%; height: 100%; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 24px; }
+    .copy-column { min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 30px; }
+    .eyebrow { color: var(--accent); font-size: 22px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+    .headline { margin: 0; max-width: 100%; color: var(--fg); font-family: var(--title-font); font-size: 112px; line-height: .94; letter-spacing: -.055em; text-wrap: balance; word-break: keep-all; }
+    .copy { margin: 0; max-width: 760px; color: var(--fg); font-size: 34px; line-height: 1.5; }
+    .visual-shell { position: relative; width: 100%; height: 720px; min-width: 0; min-height: 0; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
+    .full-image { display: block; width: 100%; height: 100%; object-fit: contain; }
+    .accent { color: var(--accent); }
+    .muted { color: var(--muted); }
+
+    .reveal {
+      visibility: hidden;
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+    .reveal.is-revealed {
+      visibility: visible;
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .demo-diagram { width: 100%; height: 100%; padding: 48px; display: grid; grid-template-columns: minmax(0, 1fr) 250px; grid-template-rows: 1fr 1fr; align-items: center; gap: 24px; }
+    .demo-orbit { grid-row: 1 / 3; width: min(470px, 100%); aspect-ratio: 1; border: 4px solid var(--line); border-radius: 50%; display: grid; place-items: center; }
+    .demo-core { width: 220px; height: 220px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: white; font-size: 44px; font-weight: 900; }
+    .demo-note { max-width: 250px; padding: 24px 28px; background: var(--surface); border: 3px solid var(--line); font-size: 28px; font-weight: 750; box-shadow: var(--shadow); }
+
+    #hud {
+      position: absolute;
+      left: 50%;
+      bottom: 26px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 12px;
+      border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--bg) 96%, white);
+      box-shadow: 0 6px 18px color-mix(in srgb, var(--fg) 8%, transparent);
+      transform: translateX(-50%);
+    }
+    #counter { order: 2; min-width: 62px; color: var(--fg); font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .06em; text-align: center; }
+    #dots { order: 1; display: flex; align-items: center; gap: 4px; }
+    .dot { position: relative; width: 10px; height: 18px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+    .dot::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 3px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 14%, transparent); transform: translateY(-50%); }
+    .dot.is-past::after { background: color-mix(in srgb, var(--fg) 38%, transparent); }
+    .dot.is-active { width: 22px; }
+    .dot.is-active::after { background: var(--accent); }
+
+    /* STYLE_TOKENS_SLOT: inline the selected assets/styles/*.css file here. */
+
+    @media (prefers-reduced-motion: reduce) {
+      .page, .reveal { transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="stage" aria-live="polite">
+    <!-- Replace these sample pages with the approved storyboard. -->
+    <section class="page" data-page-title="概念开场" data-source-span="P01-S01..P01-S02">
+      <div class="page-grid">
+        <div class="copy-column">
+          <div class="eyebrow">INTERACTIVE EXPLAINER</div>
+          <h1 class="headline">一个观点<br><span class="accent">一步出现</span></h1>
+          <p class="copy reveal" data-source-order="1" data-motion="rise">屏幕只保留帮助理解的关键词。</p>
+        </div>
+        <div class="visual-shell" role="img" aria-label="核心观点逐步连接两个解释节点的示意图">
+          <div class="demo-diagram">
+            <div class="demo-orbit"><div class="demo-core">核心观点</div></div>
+            <div class="demo-note one reveal" data-source-order="2" data-motion="place">第一层解释</div>
+            <div class="demo-note two reveal" data-source-order="3" data-motion="emphasis">下一步结论</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-page-title="顺序演示" data-source-span="P02-S01..P02-S03">
+      <div class="page-grid">
+        <div class="copy-column">
+          <div class="eyebrow">STRICT ORDER</div>
+          <h2 class="headline">前进，也能<br><span class="accent">准确返回</span></h2>
+          <p class="copy reveal" data-source-order="4" data-motion="rise">每次点击都对应口播中的下一个逻辑点。</p>
+        </div>
+        <div class="visual-shell" role="img" aria-label="从口播原稿依次通向画面步骤的流程示意图">
+          <svg viewBox="0 0 800 680" width="100%" height="100%" aria-hidden="true">
+            <path d="M120 180 H680 M120 340 H680 M120 500 H680" stroke="var(--line)" stroke-width="5" fill="none" opacity=".22"/>
+            <circle cx="180" cy="180" r="58" fill="var(--accent)"/>
+            <circle cx="400" cy="340" r="58" fill="var(--accent-2)"/>
+            <circle cx="620" cy="500" r="58" fill="var(--fg)"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <nav id="hud" aria-label="页面导航"><span id="counter"></span><div id="dots"></div></nav>
+  </main>
+
+  <script>
+    (() => {
+      const stage = document.getElementById('stage');
+      const pages = [...document.querySelectorAll('.page')];
+      const dots = document.getElementById('dots');
+      const counter = document.getElementById('counter');
+      const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const state = { page: 0, step: 0 };
+      let wheelTotal = 0;
+      let wheelReady = true;
+      let wheelIdleTimer = 0;
+
+      const reveals = (pageIndex) => [...pages[pageIndex].querySelectorAll('.reveal')];
+      const easing = 'cubic-bezier(.25,.1,.25,1)';
+      const motionState = new WeakMap();
+      const pageMotionState = new WeakMap();
+
+      function scaleStage() {
+        const scale = Math.min(innerWidth / 1920, innerHeight / 1080);
+        stage.style.setProperty('--stage-scale', String(scale));
+      }
+
+      function setRevealState(pageIndex, count) {
+        reveals(pageIndex).forEach((item, index) => {
+          item.classList.toggle('is-revealed', index < count);
+        });
+      }
+
+      function renderExact() {
+        pages.forEach((page, index) => {
+          const active = index === state.page;
+          page.classList.toggle('is-active', active);
+          setRevealState(index, active ? state.step : 0);
+        });
+        [...dots.children].forEach((dot, index) => {
+          dot.classList.toggle('is-past', index < state.page);
+          dot.classList.toggle('is-active', index === state.page);
+          dot.setAttribute('aria-current', index === state.page ? 'page' : 'false');
+        });
+        counter.textContent = `${String(state.page + 1).padStart(2, '0')} / ${String(pages.length).padStart(2, '0')}`;
+      }
+
+      function motionFrames(item, entering) {
+        const end = { opacity: 1, transform: 'translate3d(0,0,0) scale(1)' };
+        const kind = item.dataset.motion || 'rise';
+        let start = { opacity: 0, transform: 'translate3d(0,14px,0) scale(1)' };
+        if (kind === 'fade') start = { opacity: 0, transform: 'translate3d(0,0,0) scale(1)' };
+        if (kind === 'place') start = { opacity: 0, transform: 'translate3d(0,10px,0) scale(.985)' };
+        if (kind === 'slide') start = { opacity: 0, transform: 'translate3d(14px,0,0) scale(1)' };
+        if (kind === 'connect') {
+          item.style.transformOrigin = 'left center';
+          start = { opacity: 0, transform: 'translate3d(0,0,0) scaleX(.94)' };
+        }
+        if (kind === 'emphasis') start = { opacity: 0, transform: 'translate3d(0,0,0) scale(.97)' };
+        return entering ? [start, end] : [end, start];
+      }
+
+      function motionDuration(item, entering) {
+        const kind = item.dataset.motion || 'rise';
+        const forward = { fade: 460, place: 440, slide: 420, connect: 480, emphasis: 460, rise: 420 };
+        const reverse = { fade: 300, place: 290, slide: 280, connect: 320, emphasis: 300, rise: 280 };
+        return (entering ? forward : reverse)[kind] || (entering ? 420 : 280);
+      }
+
+      function clearMotion(item) {
+        const previous = motionState.get(item);
+        if (previous?.raf) cancelAnimationFrame(previous.raf);
+        if (previous?.animation) previous.animation.cancel();
+        motionState.delete(item);
+        ['opacity', 'transform', 'visibility', 'will-change'].forEach((name) => item.style.removeProperty(name));
+      }
+
+      function runMotion(item, entering) {
+        if (reducedMotion) { clearMotion(item); return; }
+        const previous = motionState.get(item);
+        const computed = previous ? getComputedStyle(item) : null;
+        const keyframes = motionFrames(item, entering);
+        const from = previous ? {
+          opacity: Number.parseFloat(computed.opacity),
+          transform: computed.transform === 'none' ? 'translate3d(0,0,0) scale(1)' : computed.transform
+        } : keyframes[0];
+        if (previous?.raf) cancelAnimationFrame(previous.raf);
+        if (previous?.animation) previous.animation.cancel();
+        const token = Symbol();
+        const record = { token, raf: 0, animation: null };
+        motionState.set(item, record);
+        item.style.visibility = 'visible';
+        item.style.opacity = String(from.opacity);
+        item.style.transform = from.transform;
+        item.style.willChange = 'transform, opacity';
+        record.raf = requestAnimationFrame(() => {
+          if (motionState.get(item)?.token !== token) return;
+          const animation = item.animate([from, keyframes[1]], { duration: motionDuration(item, entering), easing, fill: 'forwards' });
+          record.animation = animation;
+          animation.finished.catch(() => {}).finally(() => {
+            if (motionState.get(item)?.token !== token) return;
+            animation.cancel();
+            motionState.delete(item);
+            ['opacity', 'transform', 'visibility', 'will-change'].forEach((name) => item.style.removeProperty(name));
+          });
+        });
+      }
+
+      function animatePageIn(page) {
+        const previous = pageMotionState.get(page);
+        if (previous?.raf) cancelAnimationFrame(previous.raf);
+        if (previous?.animation) previous.animation.cancel();
+        if (reducedMotion) return;
+        const token = Symbol();
+        const record = { token, raf: 0, animation: null };
+        pageMotionState.set(page, record);
+        page.style.willChange = 'opacity';
+        page.style.opacity = '0';
+        record.raf = requestAnimationFrame(() => {
+          if (pageMotionState.get(page)?.token !== token) return;
+          const animation = page.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, easing, fill: 'forwards' });
+          record.animation = animation;
+          animation.finished.catch(() => {}).finally(() => {
+            if (pageMotionState.get(page)?.token !== token) return;
+            animation.cancel();
+            pageMotionState.delete(page);
+            page.style.removeProperty('opacity');
+            page.style.removeProperty('will-change');
+          });
+        });
+      }
+
+      function animateRevealIn(item) { runMotion(item, true); }
+      function animateRevealOut(item) { runMotion(item, false); }
+
+      function forward() {
+        const items = reveals(state.page);
+        if (state.step < items.length) {
+          const item = items[state.step];
+          state.step += 1;
+          item.classList.add('is-revealed');
+          animateRevealIn(item);
+          return;
+        }
+        if (state.page >= pages.length - 1) return;
+        pages[state.page].classList.remove('is-active');
+        state.page += 1;
+        state.step = 0;
+        renderExact();
+        animatePageIn(pages[state.page]);
+      }
+
+      function backward() {
+        if (state.step > 0) {
+          state.step -= 1;
+          const item = reveals(state.page)[state.step];
+          item.classList.remove('is-revealed');
+          animateRevealOut(item);
+          return;
+        }
+        if (state.page <= 0) return;
+        pages[state.page].classList.remove('is-active');
+        state.page -= 1;
+        state.step = reveals(state.page).length;
+        renderExact();
+        animatePageIn(pages[state.page]);
+      }
+
+      function jumpTo(pageIndex, step = 0) {
+        if (pageIndex < 0 || pageIndex >= pages.length) return;
+        pages[state.page].classList.remove('is-active');
+        state.page = pageIndex;
+        state.step = Math.max(0, Math.min(step, reveals(pageIndex).length));
+        renderExact();
+        animatePageIn(pages[state.page]);
+      }
+
+      function buildDots() {
+        pages.forEach((page, index) => {
+          const button = document.createElement('button');
+          button.className = 'dot';
+          button.type = 'button';
+          button.setAttribute('aria-label', `跳到第 ${index + 1} 页：${page.dataset.pageTitle || ''}`);
+          button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            jumpTo(index, 0);
+          });
+          dots.appendChild(button);
+        });
+      }
+
+      function validateStructure() {
+        const ordered = [...document.querySelectorAll('[data-source-order]')];
+        const values = ordered.map((item) => Number(item.dataset.sourceOrder));
+        const gapless = values.every((value, index) => value === index + 1);
+        const revealOnly = ordered.every((item) => item.classList.contains('reveal'));
+        const visualOnEveryPage = pages.every((page) => page.querySelector('[role="img"]'));
+        const allowedMotion = new Set(['rise', 'place', 'slide', 'connect', 'fade', 'emphasis']);
+        const motionValid = ordered.every((item) => allowedMotion.has(item.dataset.motion));
+        if (!gapless || !revealOnly || !visualOnEveryPage || !motionValid) {
+          throw new Error('Interactive Explainer structure invalid: require gapless reveal order, semantic motion, and one semantic visual per page.');
+        }
+      }
+
+      stage.addEventListener('click', (event) => {
+        if (event.target.closest('button')) return;
+        const rect = stage.getBoundingClientRect();
+        const relativeX = (event.clientX - rect.left) / rect.width;
+        if (relativeX < .5) backward(); else forward();
+      });
+
+      stage.addEventListener('wheel', (event) => {
+        if (event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+        event.preventDefault();
+        clearTimeout(wheelIdleTimer);
+        wheelIdleTimer = setTimeout(() => {
+          wheelTotal = 0;
+          wheelReady = true;
+        }, 140);
+        if (!wheelReady) return;
+        const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? innerHeight : 1;
+        const delta = event.deltaY * unit;
+        if (wheelTotal !== 0 && Math.sign(wheelTotal) !== Math.sign(delta)) wheelTotal = 0;
+        wheelTotal += delta;
+        if (Math.abs(wheelTotal) < 72) return;
+        wheelReady = false;
+        wheelTotal = 0;
+        if (delta > 0) forward(); else backward();
+      }, { passive: false });
+
+      addEventListener('keydown', (event) => {
+        const forwardKeys = [' ', 'ArrowRight', 'ArrowDown', 'PageDown'];
+        const backwardKeys = ['ArrowLeft', 'ArrowUp', 'Backspace', 'PageUp'];
+        if (forwardKeys.includes(event.key)) { event.preventDefault(); forward(); }
+        if (backwardKeys.includes(event.key)) { event.preventDefault(); backward(); }
+        if (event.key === 'Home') { event.preventDefault(); jumpTo(0, 0); }
+        if (event.key === 'End') { event.preventDefault(); jumpTo(pages.length - 1, reveals(pages.length - 1).length); }
+      });
+
+      addEventListener('resize', scaleStage);
+      validateStructure();
+      buildDots();
+      scaleStage();
+      renderExact();
+      [...document.images].forEach((image) => {
+        image.decoding = 'async';
+        if (image.decode) image.decode().catch(() => {});
+      });
+      animatePageIn(pages[0]);
+    })();
+  </script>
+</body>
+</html>

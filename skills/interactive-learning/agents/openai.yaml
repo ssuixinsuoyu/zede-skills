@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zede Interactive Learning（可交互式学习）"
+  short_description: "一次一问，按学习者回答动态调整讲解，并通过复述和迁移应用检验真正掌握"
+  default_prompt: "使用 $interactive-learning 通过一次一问的方式带我学习一个主题。"

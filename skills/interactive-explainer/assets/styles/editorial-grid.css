@@ -1,0 +1,22 @@
+:root {
+  --bg: #f2eee6;
+  --fg: #171713;
+  --muted: #716d63;
+  --accent: #c33a2c;
+  --accent-2: #73745a;
+  --surface: rgba(255, 253, 248, 0.76);
+  --line: rgba(23, 23, 19, 0.18);
+  --shadow: 0 32px 90px rgba(54, 46, 34, 0.16);
+  --title-font: "Songti SC", "STSong", serif;
+  --body-font: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.surface { background: var(--surface); border-top: 2px solid var(--fg); box-shadow: var(--shadow); }
+.eyebrow { color: var(--accent); font: 700 22px/1 var(--body-font); letter-spacing: .18em; text-transform: uppercase; }
+.headline { color: var(--fg); font: 800 110px/.96 var(--title-font); letter-spacing: -.04em; }
+.copy { color: var(--fg); font: 500 34px/1.55 var(--body-font); }
+.visual-shell { background: #ddd3c2; border-radius: 2px; overflow: hidden; box-shadow: var(--shadow); }
+.accent { color: var(--accent); }
+.muted { color: var(--muted); }
+

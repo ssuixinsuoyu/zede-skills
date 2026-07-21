@@ -1,0 +1,21 @@
+:root {
+  --bg: #fbfaf4;
+  --fg: #161616;
+  --muted: #68645b;
+  --accent: #2764e7;
+  --accent-2: #f4c84a;
+  --surface: #ffffff;
+  --line: #161616;
+  --shadow: 10px 12px 0 rgba(22, 22, 22, 0.13);
+  --title-font: "Arial Rounded MT Bold", "Microsoft YaHei", sans-serif;
+  --body-font: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.surface { background: var(--surface); border: 4px solid var(--line); border-radius: 24px 18px 28px 16px; box-shadow: var(--shadow); }
+.eyebrow { color: var(--accent); font: 800 22px/1 var(--body-font); letter-spacing: .08em; }
+.headline { color: var(--fg); font: 900 104px/1 var(--title-font); letter-spacing: -.045em; }
+.copy { color: var(--fg); font: 650 34px/1.5 var(--body-font); }
+.visual-shell { background: #fff; border: 5px solid var(--line); border-radius: 34px 22px 30px 18px; box-shadow: var(--shadow); overflow: hidden; }
+.accent { color: var(--accent); text-decoration: none; }
+.muted { color: var(--muted); }

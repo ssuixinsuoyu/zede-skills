@@ -1,0 +1,21 @@
+:root {
+  --bg: #e9e0cf;
+  --fg: #191815;
+  --muted: #6d675d;
+  --accent: #b33a30;
+  --accent-2: #506a78;
+  --surface: #f6f0e3;
+  --line: rgba(25, 24, 21, 0.32);
+  --shadow: 12px 18px 45px rgba(54, 43, 29, 0.2);
+  --title-font: "Songti SC", "STSong", serif;
+  --body-font: "Microsoft YaHei", "PingFang SC", sans-serif;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.surface { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; box-shadow: var(--shadow); }
+.eyebrow { color: var(--accent); font: 800 22px/1 var(--body-font); letter-spacing: .12em; text-transform: uppercase; }
+.headline { color: var(--fg); font: 850 104px/.98 var(--title-font); letter-spacing: -.04em; }
+.copy { color: var(--fg); font: 520 34px/1.5 var(--body-font); }
+.visual-shell { background: #d1c3ad; border: 10px solid #f7f1e5; box-shadow: var(--shadow); overflow: hidden; transform: rotate(-1deg); }
+.accent { color: var(--accent); text-decoration: none; }
+.muted { color: var(--muted); }

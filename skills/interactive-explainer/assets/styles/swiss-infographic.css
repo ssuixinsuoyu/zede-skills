@@ -1,0 +1,22 @@
+:root {
+  --bg: #f4f2ec;
+  --fg: #111111;
+  --muted: #66645f;
+  --accent: #e43d30;
+  --accent-2: #2647d7;
+  --surface: #ffffff;
+  --line: #111111;
+  --shadow: 0 28px 80px rgba(17, 17, 17, 0.12);
+  --title-font: "Bahnschrift", "Microsoft YaHei", sans-serif;
+  --body-font: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.surface { background: var(--surface); border-top: 8px solid var(--line); box-shadow: var(--shadow); }
+.eyebrow { color: var(--accent); font: 800 22px/1 var(--body-font); letter-spacing: .15em; text-transform: uppercase; }
+.headline { color: var(--fg); font: 900 112px/.9 var(--title-font); letter-spacing: -.06em; }
+.copy { color: var(--fg); font: 580 34px/1.45 var(--body-font); }
+.visual-shell { background: #fff; border: 3px solid var(--line); box-shadow: 18px 18px 0 var(--accent-2); overflow: hidden; }
+.accent { color: var(--accent); }
+.muted { color: var(--muted); }
+

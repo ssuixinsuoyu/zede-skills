@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zede Video Copywriter（观点视频文案）"
+  short_description: "先确认使用者真正想表达的观点，再写成可直接口播的完整视频文案"
+  default_prompt: "使用 $zede-video-copywriter 先帮我确认核心观点，再从零写一篇可直接口播的视频文案。"

@@ -1,0 +1,22 @@
+:root {
+  --bg: #08090b;
+  --fg: #f4f1ea;
+  --muted: #a7abb4;
+  --accent: #ff6b3d;
+  --accent-2: #777d88;
+  --surface: rgba(255, 255, 255, 0.065);
+  --line: rgba(255, 255, 255, 0.14);
+  --shadow: 0 40px 120px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --title-font: "Bahnschrift", "Microsoft YaHei", sans-serif;
+  --body-font: "PingFang SC", "Microsoft YaHei", sans-serif;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.surface { background: var(--surface); border: 1px solid var(--line); border-radius: 38px; box-shadow: var(--shadow); }
+.eyebrow { color: var(--accent); font: 650 22px/1 var(--body-font); letter-spacing: .16em; text-transform: uppercase; }
+.headline { color: var(--fg); font: 760 116px/.92 var(--title-font); letter-spacing: -.055em; }
+.copy { color: var(--fg); font: 480 34px/1.5 var(--body-font); }
+.visual-shell { background: radial-gradient(circle at 50% 38%, rgba(255,107,61,.16), transparent 45%), #101115; border: 1px solid var(--line); border-radius: 48px; box-shadow: var(--shadow); overflow: hidden; }
+.accent { color: var(--accent); }
+.muted { color: var(--muted); }
+

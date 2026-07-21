@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zede Content Topic Ideator（自媒体选题助手）"
+  short_description: "深度分析账号并生成带来源选题，持续根据反馈迭代升级"
+  default_prompt: "使用 $content-topic-ideator 根据我的反馈迭代规则，并生成 20 个附直接来源的选题。"

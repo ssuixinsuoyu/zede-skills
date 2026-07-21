@@ -1,0 +1,4 @@
+interface:
+  display_name: "My Skills（个人 Skill 路由）"
+  short_description: "自动路由到选题、视频文案、学习规划、交互教学或视觉讲解 Skill"
+  default_prompt: "使用 $my-skills 判断我的需求，并调用最合适的子 Skill。"
